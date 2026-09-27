@@ -206,7 +206,6 @@ export function buildWorld(scene, { quality = 'medium', reflection = null } = {}
   if (reflection) {
     reflection.apply(M.resin, 0.95, 0.4, 0.02);
     reflection.apply(M.entryFloor, 0.35, 2.2, 0.05);
-    reflection.apply(M.barTop, 0.0, 1, 0.0);
   }
 
   const { minX, maxX, minZ, maxZ, H } = HALL;
