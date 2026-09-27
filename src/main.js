@@ -54,7 +54,7 @@ for (const src of world.lasers) for (const b of src.beams) reflection.hide.push(
 const enemies = new Enemies({ scene, world, fx, audio, player, camera, quality: qName });
 
 let post = new Post(renderer, scene, camera, qName);
-let pr = QUALITY[qName].pr;
+let pr = Math.min(QUALITY[qName].pr, devicePixelRatio);
 function resize() {
   const w = innerWidth, h = innerHeight;
   renderer.setPixelRatio(Math.min(devicePixelRatio, pr));
@@ -72,7 +72,7 @@ resize();
 function applyQuality(q) {
   qName = q;
   const Q = QUALITY[q];
-  pr = Q.pr;
+  pr = Math.min(Q.pr, devicePixelRatio);
   reflection.scale = Q.refl; reflection.uniforms.uReflOn.value = Q.refl > 0 ? 1 : 0;
   world.lights.stage.forEach((s, i) => { s.castShadow = i < (q === 'ultra' ? 2 : 0); });
   weapon.setShadowSize(Q.shadowSize);
@@ -393,9 +393,9 @@ function frame() {
     const db = renderer.getDrawingBufferSize(new THREE.Vector2());
     hud.fps.textContent = `${fpsShown.toFixed(0)} FPS · ${qName} · ${db.x}×${db.y}`;
     dynT++;
-    if (G.state !== 'title' && dynT > 2) {
+    if (G.state !== 'title' && dynT > 1) {
       const Q = QUALITY[qName];
-      if (fpsShown < 50 && pr > 0.5) { pr = Math.max(0.5, pr - 0.1); resize(); dynT = 0; }
+      if (fpsShown < 50 && pr > 0.5) { pr = Math.max(0.5, pr - (fpsShown < 35 ? 0.2 : 0.1)); resize(); dynT = 0; }
       else if (fpsShown > 58 && pr < Math.min(Q.maxPr, devicePixelRatio)) { pr = Math.min(Q.maxPr, pr + 0.05); resize(); dynT = 0; }
     }
   }
