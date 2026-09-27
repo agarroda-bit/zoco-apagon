@@ -224,7 +224,7 @@ export function buildWorld(scene, { quality = 'medium', reflection = null } = {}
   box(18, H - 4, 0.3, M.black, -2, 4 + (H - 4) / 2, 7.5, { collide: false });
   box(0.3, H - 4, 22.5, M.black, 7, 4 + (H - 4) / 2, -3.75, { collide: false });
   // paredes
-  const wallMat = (rx, ry) => { const m = M.wall.clone(); for (const k of ['map', 'normalMap', 'roughnessMap']) { m[k] = M.wall[k].clone(); m[k].repeat.set(rx, ry); } return m; };
+  const wallMat = (rx, ry) => pbr('painted_concrete', rx, ry, { color: 0x2b2b2e });
   const acousticWall = M.acoustic.clone(); acousticWall.map = heraklith.clone(); acousticWall.map.repeat.set(30 / 1.2, H / 0.6); acousticWall.bumpMap = acousticWall.map; acousticWall.color.set(0x6a625c);
   addMesh(new THREE.PlaneGeometry(30, H).rotateY(Math.PI / 2), acousticWall, minX, H / 2, 0, { hit: 'wood' });
   addMesh(new THREE.PlaneGeometry(30, H).rotateY(-Math.PI / 2), wallMat(8, 2), maxX, H / 2, 0, { hit: 'concrete' });
