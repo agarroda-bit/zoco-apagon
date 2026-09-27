@@ -61,6 +61,7 @@ export class Weapon {
     this._v = new THREE.Vector3(); this._d = new THREE.Vector3(); this._q = new THREE.Quaternion();
     this.frame = 0;
     this.onShot = null; this.onHit = null; this.hitTargets = () => []; this.onEnemyHit = null; this.onBallHit = null;
+    this.m.redDot.material.color.setRGB(6, 0.35, 0.3); this.m.redDot.material.depthTest = false; this.m.redDot.renderOrder = 10; this.m.redDot.scale.multiplyScalar(1.5);
     this.setLight(true);
   }
 

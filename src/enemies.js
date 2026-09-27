@@ -42,7 +42,7 @@ export class Enemies {
 
   // ---------------- drones ----------------
   makeDrone(big = false) {
-    const s = big ? 3.4 : 1;
+    const s = big ? 4.6 : 1;
     const g = new THREE.Group();
     const body = new THREE.Mesh(new THREE.SphereGeometry(0.2 * s, 24, 16), this.droneMat); body.scale.y = 0.62; g.add(body);
     const ring = new THREE.Mesh(new THREE.TorusGeometry(0.21 * s, 0.025 * s, 8, 28), this.droneMat2); ring.rotation.x = Math.PI / 2; g.add(ring);
@@ -93,7 +93,7 @@ export class Enemies {
 
   spawnBoss() {
     const d = this.makeDrone(true);
-    d.g.position.set(-1, 11, -1.5);
+    d.g.position.set(-1, 7.3, -1.5);
     this.scene.add(d.g);
     const e = { kind: 'boss', ...d, alive: true, hp: 45, maxHp: 45, pos: d.g.position, target: new THREE.Vector3(-1, 5.6, -1.5), t: 0, id: this.id++, aimDir: new THREE.Vector3(0, -1, 0.3).normalize(), lock: 0, fireT: 3, burst: 0, dead: 0, descending: true };
     e.hitboxes = [d.hit, ...d.g.children.filter((c) => c.isMesh && c !== d.hit)];
@@ -221,7 +221,7 @@ export class Enemies {
     for (const e of this.list) {
       if (!e.alive) continue;
       if (e.kind === 'drone' || e.kind === 'boss') out.push({ pos: e.eye.getWorldPosition(new THREE.Vector3()), dir: e.aimDir, color: new THREE.Color(1, 0.1, 0.08), gain: e.kind === 'boss' ? 3 : 1.4, cosO: Math.cos(0.05), cosI: Math.cos(0.02) });
-      if (e.spot && e.spot.intensity > 0) out.push({ pos: e.spot.position, dir: e.spot.target.position.clone().sub(e.spot.position), color: e.spot.color, gain: e.kind === 'boss' ? 6 : 4, cosO: Math.cos(e.spot.angle), cosI: Math.cos(e.spot.angle * 0.5) });
+      if (e.spot && e.spot.intensity > 0) out.push({ pos: e.spot.position, dir: e.spot.target.position.clone().sub(e.spot.position), color: e.spot.color, gain: e.kind === 'boss' ? 6 : 3, cosO: Math.cos(e.spot.angle), cosI: Math.cos(e.spot.angle * 0.5) });
     }
     return out.slice(0, 4);
   }
@@ -309,11 +309,11 @@ export class Enemies {
     if (e.lock > 0.7 && sees && e.fireT <= 0) {
       if (boss) {
         e.burst = (e.burst || 0) + 1;
-        this.shootAt(ep, eyeP.clone().setY(eyeP.y - 0.2), 0.08, 20, 9);
+        this.shootAt(ep, eyeP.clone().setY(eyeP.y - 0.2), 0.12, 19, 5);
         this.audio.droneShot(ep);
-        e.fireT = e.burst % 6 === 0 ? 2.2 : 0.16;
+        e.fireT = e.burst % 5 === 0 ? 3.0 : 0.2;
       } else {
-        this.shootAt(ep, eyeP.clone().setY(eyeP.y - 0.2), 0.05, 18, 7);
+        this.shootAt(ep, eyeP.clone().setY(eyeP.y - 0.2), 0.07, 17, 6);
         this.audio.droneShot(ep);
         e.fireT = 1.4 + Math.random();
       }
@@ -429,7 +429,7 @@ export class Enemies {
       this.audio.enemyShot(gp);
       this.fx.flash(gp, 40, 0.06, 0xffc080);
       this.fx.glow.spawn(gp, new THREE.Vector3(), { life: 0.05, size: 0.35, color: [4, 2.8, 1.4], alpha: 1 });
-      if (Math.random() < hitChance) { this.onPlayerHit && this.onPlayerHit(9); this.fx.tracer(gp, eyeP.clone().add(new THREE.Vector3(0.3, -0.3, 0))); }
+      if (Math.random() < hitChance) { this.onPlayerHit && this.onPlayerHit(7); this.fx.tracer(gp, eyeP.clone().add(new THREE.Vector3(0.3, -0.3, 0))); }
       else { const miss = eyeP.clone().add(new THREE.Vector3((Math.random() - 0.5) * 2, (Math.random() - 0.5) * 1.2, (Math.random() - 0.5) * 2)); this.fx.tracer(gp, miss); }
     }
   }

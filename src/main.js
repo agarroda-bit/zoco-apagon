@@ -86,7 +86,7 @@ const G = {
   state: 'title', phase: 0, t: 0, phaseT: 0, power: 0, powerTarget: 0, cleaning: 0,
   kills: 0, shots: 0, hits: 0, startTime: 0, endTime: 0, fpsOn: false, dyn: 1,
 };
-window.__zoco = { G, world, player, weapon, enemies, camera, post: () => post, audio, setPhase: (p) => setPhase(p), fps: () => fpsShown };
+window.__zoco = { G, world, player, weapon, enemies, camera, input, post: () => post, audio, setPhase: (p) => setPhase(p), fps: () => fpsShown };
 
 const $ = (id) => document.getElementById(id);
 function lockPointer() { try { const r = renderer.domElement.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch (e) { /* sin bloqueo */ } }
@@ -109,7 +109,7 @@ function setPhase(p) {
   if (p === 1) { G.powerTarget = 0; phaseTitle('APAGÓN', 'Se ha ido la luz · 3 drones de seguridad'); enemies.spawnDrones(3, false); hud.obj.textContent = 'Drones: 3'; }
   if (p === 2) { audio.generator(); G.flickerT = 2.6; phaseTitle('VUELVE LA CORRIENTE', 'A medias · 5 drones'); setTimeout(() => { if (G.phase === 2) enemies.spawnDrones(5, true); }, 2600); }
   if (p === 3) { G.powerTarget = 1; phaseTitle('LOS SEGURATAS', 'Te están buscando'); enemies.spawnBouncers(5); world.doorsOpen = true; setTimeout(() => subtitle('«Con esas zapatillas no pasas.»', 3), 1800); }
-  if (p === 4) { audio.alarm(); phaseTitle('EL JEFE', 'Baja del techo'); enemies.spawnBoss(); }
+  if (p === 4) { G.powerTarget = 1; audio.alarm(); phaseTitle('EL JEFE', 'Baja del techo'); enemies.spawnBoss(); }
   if (p === 5) {
     G.endTime = G.t; G.cleaning = 1; G.power = 0; G.powerTarget = 0; audio.lightsOn();
     setTimeout(showEnd, 2600);
@@ -340,7 +340,7 @@ function frame() {
       // regeneración de vida
       if (G.t - player.lastHit > 4 && player.health < 100) player.health = Math.min(100, player.health + dt * 12);
       if (player.health <= 0) {
-        player.health = 100; player.pos.copy(world.spawn.pos); player.yaw = 0;
+        player.health = 100; player.pos.copy(world.spawn.pos); player.yaw = 0; hud.dmg.style.opacity = 0;
         subtitle('Te han sacado de la pista. Vuelves a entrar.', 3);
       }
     }

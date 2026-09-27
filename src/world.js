@@ -1,6 +1,7 @@
 // La sala: réplica libre de la sala grande de la Salamandra (Zoco). Nave de 30 × 22 m.
 // Ejes: Z negativo = escenario (fondo), Z positivo = entrada. X positivo = barra (derecha).
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const BASE = import.meta.env.BASE_URL;
 const TL = new THREE.TextureLoader();
@@ -306,6 +307,12 @@ export function buildWorld(scene, { quality = 'medium', reflection = null } = {}
         g.add(l);
       }
     }
+    // fusionar todas las piezas del tramo en una sola malla (muchas menos llamadas de dibujo)
+    const geos = [];
+    for (const ch of g.children) { ch.updateMatrix(); geos.push(ch.geometry.clone().applyMatrix4(ch.matrix)); const k = W.hit.indexOf(ch); if (k >= 0) W.hit.splice(k, 1); }
+    g.clear();
+    const merged = new THREE.Mesh(mergeGeometries(geos), trussMat);
+    merged.userData.mat = 'metal'; merged.receiveShadow = true; g.add(merged); W.hit.push(merged);
     return g;
   };
   trussBox(3.2, 0.3, 0.3, 0, 0.9 + 1.0, -10.6);

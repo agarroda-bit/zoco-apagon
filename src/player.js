@@ -2,7 +2,7 @@
 // con cilindro contra cajas (AABB). Las cajas bajas (< STEP) se pueden subir.
 import * as THREE from 'three';
 
-const STEP = 0.42;
+const STEP = 0.5;
 const RADIUS = 0.34;
 
 export class Input {
