@@ -148,7 +148,7 @@ class ExposureEffect extends Effect {
 
 export const QUALITY = {
   low: { pr: 0.75, maxPr: 1, ao: false, vol: 0, dof: false, refl: 0, cube: false, shadows: 1, shadowSize: 1024, smaa: SMAAPreset.LOW, bloomLevels: 5, grain: false },
-  medium: { pr: 1, maxPr: 1.25, ao: 'Performance', vol: 14, dof: true, refl: 0.5, cube: false, shadows: 1, shadowSize: 1024, smaa: SMAAPreset.MEDIUM, bloomLevels: 7, grain: true },
+  medium: { pr: 1, maxPr: 1.25, ao: 'Performance', vol: 12, dof: true, refl: 0.4, cube: false, shadows: 1, shadowSize: 1024, smaa: SMAAPreset.MEDIUM, bloomLevels: 7, grain: true },
   ultra: { pr: 1.5, maxPr: 2, ao: 'Medium', vol: 26, dof: true, refl: 1, cube: true, shadows: 3, shadowSize: 2048, smaa: SMAAPreset.HIGH, bloomLevels: 8, grain: true },
 };
 
@@ -192,7 +192,7 @@ export class Post {
     if (this.q.grain) {
       this.ca = new ChromaticAberrationEffect({ offset: new THREE.Vector2(0.0007, 0.0005), radialModulation: true, modulationOffset: 0.35 });
       this.noise = new NoiseEffect({ blendFunction: BlendFunction.SOFT_LIGHT, premultiply: false });
-      this.noise.blendMode.opacity.value = 0.32;
+      this.noise.blendMode.opacity.value = 0.1;
       this.composer.addPass(new EffectPass(camera, this.ca, this.noise, this.vignette));
     }
     this.frame = 0;

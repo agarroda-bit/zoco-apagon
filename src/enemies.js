@@ -69,7 +69,9 @@ export class Enemies {
     if (big) {
       // jefe: carcasa extra y focos propios
       const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.5 * s * 0.4, 0.62 * s * 0.4, 0.3 * s * 0.4, 8), this.droneMat2); shell.position.y = 0.12 * s; g.add(shell);
-      for (const x of [-1, 1]) { const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.13, 0.2, 12), this.droneMat); lamp.position.set(x * 0.45, -0.25, 0.3); g.add(lamp); }
+      for (const x of [-1, 1]) { const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.13, 0.2, 12), this.droneMat); lamp.position.set(x * 0.45, -0.25, 0.3); g.add(lamp); const lg = new THREE.Mesh(new THREE.CircleGeometry(0.1, 14), new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 1, 1).multiplyScalar(8) })); lg.position.set(x * 0.45, -0.36, 0.3); lg.rotation.x = Math.PI / 2; g.add(lg); }
+      const strip = new THREE.Mesh(new THREE.TorusGeometry(0.21 * s, 0.012 * s, 6, 40), new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0.05, 0.1).multiplyScalar(6) })); strip.rotation.x = Math.PI / 2; strip.position.y = -0.03 * s; g.add(strip);
+      for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; const led = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), new THREE.MeshBasicMaterial({ color: new THREE.Color(1, 0.35, 0.05).multiplyScalar(7) })); led.position.set(Math.cos(a) * 0.62 * s * 0.4 + Math.cos(a) * 0.3, 0.12 * s, Math.sin(a) * 0.62 * s * 0.4 + Math.sin(a) * 0.3); g.add(led); }
     }
     g.traverse((o) => { if (o.isMesh) o.castShadow = false; });
     return { g, eye, eyeMat, beam, beamGlow, rotors, hit };
@@ -116,8 +118,8 @@ export class Enemies {
       g.traverse((o) => {
         if (o.isMesh) {
           o.castShadow = true; o.frustumCulled = false;
-          const m = o.material.clone();
-          m.color = new THREE.Color(0x3a3a3e); m.roughness = 0.55; m.metalness = 0.05;
+          // traje negro: sin la textura caqui original, conservando el relieve
+          const m = new THREE.MeshStandardMaterial({ color: 0x0d0d10, roughness: 0.5, metalness: 0.08, normalMap: o.material.normalMap || null });
           o.material = m;
         }
       });

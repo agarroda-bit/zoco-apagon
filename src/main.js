@@ -8,10 +8,8 @@ import { FX, sharedPtUniforms, flashTex } from './fx.js';
 import { Weapon } from './weapon.js';
 import { Enemies } from './enemies.js';
 
-const audioMods = import.meta.glob('./audio.js', { eager: true });
-const AudioSystem = audioMods['./audio.js'] && audioMods['./audio.js'].AudioSystem;
-const noop = () => ({ kick: 0, beat: 0, bpm: 96, level: 0 });
-const audio = AudioSystem ? new AudioSystem() : new Proxy({}, { get: () => noop });
+import { AudioSystem } from './audio-lite.js';
+const audio = new AudioSystem();
 
 const params = new URLSearchParams(location.search);
 const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance', stencil: false });
@@ -52,6 +50,7 @@ const groundAt = (x, z, y) => player.groundAt(x, z, y);
 const fx = new FX(scene, groundAt, audio);
 const weapon = new Weapon({ camera, scene, audio, fx, world, quality: qName, envMap: scene.environment });
 reflection.hide.push(weapon.root);
+for (const src of world.lasers) for (const b of src.beams) reflection.hide.push(b.core);
 const enemies = new Enemies({ scene, world, fx, audio, player, camera, quality: qName });
 
 let post = new Post(renderer, scene, camera, qName);
@@ -87,7 +86,7 @@ const G = {
   state: 'title', phase: 0, t: 0, phaseT: 0, power: 0, powerTarget: 0, cleaning: 0,
   kills: 0, shots: 0, hits: 0, startTime: 0, endTime: 0, fpsOn: false, dyn: 1,
 };
-window.__zoco = { G, world, player, weapon, enemies, camera, post: () => post, audio };
+window.__zoco = { G, world, player, weapon, enemies, camera, post: () => post, audio, setPhase: (p) => setPhase(p), fps: () => fpsShown };
 
 const $ = (id) => document.getElementById(id);
 function lockPointer() { try { const r = renderer.domElement.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch (e) { /* sin bloqueo */ } }
@@ -112,7 +111,7 @@ function setPhase(p) {
   if (p === 3) { G.powerTarget = 1; phaseTitle('LOS SEGURATAS', 'Te están buscando'); enemies.spawnBouncers(5); world.doorsOpen = true; setTimeout(() => subtitle('«Con esas zapatillas no pasas.»', 3), 1800); }
   if (p === 4) { audio.alarm(); phaseTitle('EL JEFE', 'Baja del techo'); enemies.spawnBoss(); }
   if (p === 5) {
-    G.endTime = G.t; G.cleaning = 1; audio.lightsOn();
+    G.endTime = G.t; G.cleaning = 1; G.power = 0; G.powerTarget = 0; audio.lightsOn();
     setTimeout(showEnd, 2600);
   }
 }
@@ -162,14 +161,14 @@ function lighting(dt, beat) {
   const musicOn = G.phase >= 2 && G.phase < 5;
   // entorno y ambiente
   scene.environmentIntensity = 0.05 + P * 0.35 + cl * 0.9;
-  L.hemi.intensity = 0.015 + P * 0.05 + cl * 2.2;
+  L.hemi.intensity = 0.015 + P * 0.05 + cl * 5.5;
   L.hemi.color.set(cl ? 0xf4f6ff : 0x8090b0);
   // emergencia: siempre, parpadeo ocasional
   const emFlick = Math.random() < 0.01 ? 0.3 : 1;
   L.emergency.forEach((l) => (l.intensity = (3.2 * emFlick) * (1 - P * 0.4)));
   L.exitGreen.intensity = 1.1;
   // pantalla, neones, barra
-  world.screenMat.uniforms.uTime.value = t; world.screenMat.uniforms.uKick.value = kick; world.screenMat.uniforms.uPower.value = P > 0.3 ? P : P * (Math.random() < 0.5 ? 1 : 0);
+  world.screenMat.uniforms.uTime.value = t; world.screenMat.uniforms.uKick.value = kick; world.screenMat.uniforms.uPower.value = cl ? 0 : P > 0.3 ? P : P * (Math.random() < 0.5 ? 1 : 0);
   const neonK = P > 0.1 ? P * (0.85 + kick * 0.3) : 0;
   world.neon.pink.color.set(0xff2a8a).multiplyScalar(6 * neonK + (cl ? 1 : 0));
   world.neon.cyan.color.set(0x28e6ff).multiplyScalar(5 * neonK + (cl ? 1 : 0));
@@ -182,12 +181,12 @@ function lighting(dt, beat) {
   L.screen.intensity = P > 0.3 ? 12 * P * (0.6 + kick) : 0;
   L.screen.color.setHSL((t * 0.03) % 1, 0.9, 0.55);
   world.workMat.color.setScalar(cl * 12);
-  for (const pm of world.sidePanels) pm.color.setHSL((t * 0.05 + 0.5) % 1, 1, 0.5).multiplyScalar(musicOn ? P * (0.4 + kick * 2.5) : 0);
+  for (const pm of world.sidePanels) { pm.uniforms.uTime.value = t * 1.3 + 7; pm.uniforms.uKick.value = kick; pm.uniforms.uPower.value = musicOn ? P * 0.8 : 0; }
   // focos del escenario y cabezas móviles al ritmo
   const bi = Math.floor(beat.beat || 0);
   L.stage.forEach((s, i) => {
     const c = palette[(bi + i) % palette.length];
-    if (cl) { s.color.set(0xffffff); s.intensity = 900; s.angle = 0.9; s.target.position.set(s.position.x, 0, s.position.z); return; }
+    if (cl) { s.color.set(0xf2f5ff); s.intensity = 2200; s.angle = 1.1; s.penumbra = 0.8; s.target.position.set(s.position.x, 0, s.position.z); return; }
     s.color.copy(c);
     s.intensity = musicOn ? P * (160 + kick * 900) : 0;
     s.angle = 0.28;
@@ -329,8 +328,7 @@ function frame() {
   const st = input.poll(dt);
   if (st.fps) { G.fpsOn = !G.fpsOn; hud.fps.style.display = G.fpsOn ? 'block' : 'none'; }
   const beat = audio.getBeat ? audio.getBeat() : { kick: 0, beat: 0 };
-  if (!AudioSystem && G.phase >= 2) { const b = G.t * 1.6; beat.beat = b; beat.kick = Math.max(0, 1 - (b % 1) * 4); }
-
+  
   if (G.state === 'title') {
     titleCam(G.t);
     G.power = 0;

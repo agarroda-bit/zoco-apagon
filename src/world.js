@@ -139,9 +139,9 @@ function neonZoco() {
   const cyan = new THREE.MeshBasicMaterial({ color: 0x28e6ff });
   const add = (geo, m) => { const mesh = new THREE.Mesh(geo, m); g.add(mesh); return mesh; };
   add(tubeFromPoints([[-3.0, 0.7], [-1.95, 0.7], [-2.55, 0.05], [-2.2, 0.05], [-3.0, -0.7], [-1.9, -0.7]]), pink);
-  add(tubeFromPoints(arcPts(-0.95, 0, 0.62, 0.72, 0.35, Math.PI * 2 - 0.1, 40)), pink);
+  add(tubeFromPoints(arcPts(-0.95, 0, 0.62, 0.72, 0.5, Math.PI * 2 + 0.38, 44)), pink);
   add(tubeFromPoints(arcPts(0.55, 0, 0.62, 0.72, 0.6, Math.PI * 2 - 0.6, 40)), pink);
-  add(tubeFromPoints(arcPts(2.1, 0, 0.62, 0.72, 0.1, Math.PI * 2 - 0.35, 40)), pink);
+  add(tubeFromPoints(arcPts(2.1, 0, 0.62, 0.72, -0.9, Math.PI * 2 - 1.05, 44)), pink);
   add(tubeFromPoints([[-3.1, -1.05], [-1.0, -1.18], [1.2, -1.02], [3.0, -1.2]], 0.028), cyan);
   add(tubeFromPoints(arcPts(2.1, 0, 0.18, 0.18, 0, Math.PI * 2, 16), 0.022, true), cyan);
   // placa trasera
@@ -320,8 +320,8 @@ export function buildWorld(scene, { quality = 'medium', reflection = null } = {}
   W.sidePanels = [];
   for (const x of [-5.4, 5.4]) {
     box(1.2, 4, 0.25, M.speaker, x, 2, -13.5, { hit: 'metal' });
-    const pm = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const p = addMesh(new THREE.PlaneGeometry(1.1, 3.9), pm, x, 2, -13.37, { hit: 'glass' });
+    const pm = screenMaterial();
+    addMesh(new THREE.PlaneGeometry(1.1, 3.9), pm, x, 2, -13.37, { hit: 'glass' });
     W.sidePanels.push(pm);
   }
   // line arrays colgados y subwoofers en el suelo

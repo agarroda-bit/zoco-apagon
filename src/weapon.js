@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { buildCarbine } from './weapon-model.js';
 import { flashTex } from './fx.js';
 
-const HIP = new THREE.Vector3(0.13, -0.185, -0.36);
+const HIP = new THREE.Vector3(0.125, -0.19, -0.47);
 const RPM = 750;
 
 export class Weapon {
@@ -16,7 +16,7 @@ export class Weapon {
     this.root.add(this.pivot); this.pivot.add(this.m.group);
     camera.add(this.root);
     this.m.group.traverse((o) => { if (o.isMesh) { o.frustumCulled = false; o.renderOrder = 0; } });
-    this.ADS = new THREE.Vector3(0, -this.m.sightHeight, -0.2);
+    this.ADS = new THREE.Vector3(0, -this.m.sightHeight, -0.26);
     // linterna táctica (sombras suaves)
     this.flash = this.m.flashlight;
     this.spot = new THREE.SpotLight(0xfff2e0, 0, 45, 0.46, 0.6, 2);
@@ -178,6 +178,7 @@ export class Weapon {
       if (this.ammo > 0 && this.cool <= 0) this.fire(player, t);
       else if (this.ammo <= 0 && this.cool <= 0) { this.audio.dryFire(); this.cool = 0.3; }
     }
+    if (window.__holdFlash) { this.muzzleLight.intensity = 90; this.m.muzzle.getWorldPosition(this.muzzleLight.position); this.flashGroup.visible = true; this.flashT = 1; }
     // fogonazo
     if (this.flashT > 0) { this.flashT -= dt; if (this.flashT <= 0) this.flashGroup.visible = false; }
     this.muzzleLight.intensity *= Math.exp(-dt * 38);
@@ -200,8 +201,8 @@ export class Weapon {
     pos.y += -Math.abs(Math.cos(ph)) * 0.011 * mv + breath + this.sway.y * 0.02 - this.runK * 0.04 - player.landKick * 0.03;
     pos.z += this.recoil.y * 0.028 * (1 - aim * 0.4) + this.tuck * 0.18;
     this.root.rotation.set(
-      this.recoil.x * 0.045 * (1 - aim * 0.5) + this.sway.y * 0.35 + this.tuck * 0.9 + this.runK * -0.25 + breath * 2,
-      this.sway.x * 0.35 + this.runK * 0.55 + Math.sin(ph) * 0.01 * mv,
+      this.recoil.x * 0.045 * (1 - aim * 0.5) + this.sway.y * 0.35 + this.tuck * 0.9 + this.runK * -0.25 + breath * 2 + 0.035 * (1 - aim),
+      this.sway.x * 0.35 + this.runK * 0.55 + Math.sin(ph) * 0.01 * mv + 0.045 * (1 - aim),
       this.recoil.z * 0.03 + this.runK * 0.35 + Math.sin(ph) * 0.015 * mv,
     );
     // animación de recarga
