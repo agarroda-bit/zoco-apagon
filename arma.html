@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Arma — vista previa</title>
+<style>html,body{margin:0;height:100%;background:#101114;overflow:hidden}</style>
+</head>
+<body>
+<script type="module">
+// Vista previa de la carabina: ?q=low|medium|high  ?luz  ?vista=fp|ads
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { buildCarbine } from '/src/weapon-model.js';
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x121316);
+const pmrem = new THREE.PMREMGenerator(renderer);
+const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const qs = new URLSearchParams(location.search);
+const gun = buildCarbine({ quality: qs.get('q') || 'medium', envMap: env });
+scene.add(gun.group);
+gun.flashLens.material.emissiveIntensity = qs.has('luz') ? 4 : 0;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+const spot = new THREE.SpotLight(0xfff1e0, 14, 6, 0.6, 0.4, 1.5);
+spot.position.set(0.9, 1.3, 0.7);
+spot.target.position.set(0, 0.05, -0.15);
+scene.add(spot, spot.target);
+
+const cam = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.01, 20);
+const vistas = {
+  tresCuartos: () => { cam.fov = 32; cam.position.set(0.78, 0.36, 0.42); cam.lookAt(0, 0.05, -0.16); },
+  fp: () => { cam.fov = 60; cam.position.set(-0.10, 0.23, 0.42); cam.lookAt(0.02, 0.10, -0.40); },
+  ads: () => { cam.fov = 45; cam.position.set(0, gun.sightHeight, 0.22); cam.lookAt(0, gun.sightHeight, -2); },
+};
+window.__vista = (v) => { vistas[v](); cam.updateProjectionMatrix(); };
+window.__vista(qs.get('vista') || 'tresCuartos');
+
+renderer.setAnimationLoop(() => renderer.render(scene, cam));
+setTimeout(() => {
+  window.__arma = { tris: gun.group.userData.triangles, calls: renderer.info.render.calls, sightHeight: gun.sightHeight };
+  console.log('arma', JSON.stringify(window.__arma));
+}, 500);
+addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); });
+</script>
+</body>
+</html>
